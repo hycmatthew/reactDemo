@@ -6,11 +6,14 @@ class About extends React.Component {
   };
   render() {
     return (
-      <form>
-        <input placeholder="name" type="name" />
-        <input placeholder="email" type="email" />
-        <button onClick={this.onSubmit}>Submit</button>
-      </form>
+      <div className="about-block">
+        <h1>Test Title</h1>
+        <form>
+          <input placeholder="name" type="name" />
+          <input placeholder="email" type="email" />
+          <button onClick={this.onSubmit}>Submit</button>
+        </form>
+      </div>
     );
   }
 }
