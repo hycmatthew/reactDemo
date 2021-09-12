@@ -1,4 +1,5 @@
 import React from "react";
+import Button from "@material-ui/core/Button";
 
 class About extends React.Component {
   onSubmit = () => {
@@ -11,7 +12,7 @@ class About extends React.Component {
         <form>
           <input placeholder="name" type="name" />
           <input placeholder="email" type="email" />
-          <button onClick={this.onSubmit}>Submit</button>
+          <Button variant="contained" color="primary" onClick={this.onSubmit}>Submit</Button>
         </form>
       </div>
     );
