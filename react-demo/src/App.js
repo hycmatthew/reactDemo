@@ -1,9 +1,9 @@
 import React from "react";
 
-export function App(){
+export const App = () => {
     return(
         <div>
-            <h1>Test</h1>
+            <h1>Tes12t</h1>
         </div>
     );
-}
+};
