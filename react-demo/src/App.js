@@ -1,9 +1,14 @@
 import React from "react";
+import './App.scss'; 
+import { TopMenu } from './TopMenu'; 
+import { MainPage } from './MainPage.js'; 
+import { PageWindow } from './PageWindow.js'; 
 
 export const App = () => {
     return(
         <div>
-            <h1>Tes12t</h1>
+            <TopMenu />
+            <PageWindow />
         </div>
     );
 };

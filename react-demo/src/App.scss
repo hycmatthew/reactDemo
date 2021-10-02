@@ -1,0 +1,28 @@
+.main-menu-block{
+    width: 100%;
+    .main-menu-item{
+        width: 20%;
+        text-align: center;
+        display: inline-block;
+        font-size: 1.2vw;
+    }
+}
+
+.page-window{
+    object{
+        width: 80vw;
+        height: 50vh;
+    }
+}
+
+.preview-block{
+    margin: 0 auto;
+    width: 20%;
+    img{
+        width: 100%;
+    }
+    canvas{
+        width: 500px;
+        height: 500px;
+    }
+}
