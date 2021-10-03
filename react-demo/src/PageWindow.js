@@ -1,14 +1,32 @@
-import React, { useState }  from "react";
+import React, { useState, useEffect }  from "react";
+import { TopMenu } from './TopMenu.js'; 
 import paperImage from './paper.png';
 
 export function PageWindow() {
-    const [img, setImg] = useState('banana');
+    
+    const [img, setImg] = useState('');
+
+    useEffect(() => {
+        let canvas = document.getElementById("canvas");
+        canvas.width = 700;
+        canvas.height = 700;
+        let ctx = canvas.getContext("2d");
+        let grd = ctx.createLinearGradient(0, 0, 700, 0);
+        grd.addColorStop(0, '#314755');
+        grd.addColorStop(1, '#26a0da');
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 0, 700, 700);
+        var imgData = canvas.toDataURL("image/png");
+        var canvasImage = document.getElementById('canvas-img');
+        canvasImage.setAttribute('src' , imgData);
+    }, []);
 
     const fileLoad = e => {
         this.setState({
           img: e.target.result
         });
     };
+
     const submit = () => {
         console.log("submit");
     };
@@ -42,21 +60,39 @@ export function PageWindow() {
             imageObj2.onload = function() {
                 ctx.drawImage(imageObj2, 200, 200, 300, 300);
                 var imgData = canvas.toDataURL("image/png");
-                var avatar = document.getElementById('avatar');
-                avatar.setAttribute('src' , imgData);
+                var canvasImage = document.getElementById('canvas-img');
+                canvasImage.setAttribute('src' , imgData);
             }
         };
     }
 
+    function setupImage(){
+        const img = new Image();
+        setImgElement(paperImage);
+        /*
+        const img = new Image();
+        let canvas = document.getElementById("canvas");
+        canvas.width = 700;
+        canvas.height = 700;
+        let ctx = canvas.getContext("2d");
+        let grd = ctx.createLinearGradient(0, 0, 700, 0);
+        grd.addColorStop(0, '#314755');
+        grd.addColorStop(1, '#26a0da');
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 0, 700, 700);
+        ctx.drawImage(img, left, top, width, height);
+        setImgElement(img);*/
+    }
+    
     return (
-        <div>
-          <h1>圖片預覽與檔案上傳</h1>
-          <input type="file" onChange={uploadImage} />
-          <div className="preview-block">
-            <img src={img} />
-            <canvas id="canvas" className="hidden"><img id="avatar" src={paperImage} /></canvas>
-          </div>
-          <button onClick={submit}>上傳</button>
+        <div className="web-page">
+            <TopMenu />
+            <h1>圖片預覽與檔案上傳</h1>
+            <input type="file" onChange={uploadImage} />
+            <div className="preview-block">
+                <canvas id="canvas"><img id="canvas-img" /></canvas>
+            </div>
+            <button onClick={submit}>上傳</button>
         </div>
     );
 }
