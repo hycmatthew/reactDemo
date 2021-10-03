@@ -26,3 +26,21 @@
         height: 500px;
     }
 }
+
+.top-menu{
+    Button{
+        padding: 0% 3vw;
+        color: #fff;
+    }
+}
+
+.main-page{
+    padding: 2%;
+    text-align: center;
+    
+    .image-card{
+        margin: 1%;
+        display: inline-block;
+        width: 22%;
+    }
+}
