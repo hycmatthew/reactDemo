@@ -1,24 +1,38 @@
-import React, { useState, useEffect }  from "react";
+import React, { useState, useEffect, useReducer }  from "react";
 import { TopMenu } from './TopMenu.js'; 
+import { SideMenu } from "./SideMenu.js";
 import paperImage from './paper.png';
+import iPhone13Image from './iPhone 13 - Moonlight.png';
+import { useLocation } from "react-router";
 
 export function PageWindow() {
     
+    const emp = useLocation();
     const [img, setImg] = useState('');
+    const deviceSize = [2532,1170];
 
     useEffect(() => {
         let canvas = document.getElementById("canvas");
-        canvas.width = 700;
-        canvas.height = 700;
+        canvas.width = deviceSize[0];
+        canvas.height = deviceSize[1];
         let ctx = canvas.getContext("2d");
-        let grd = ctx.createLinearGradient(0, 0, 700, 0);
+        let grd = ctx.createLinearGradient(0, 0, deviceSize[0], deviceSize[1]);
         grd.addColorStop(0, '#314755');
         grd.addColorStop(1, '#26a0da');
         ctx.fillStyle = grd;
-        ctx.fillRect(0, 0, 700, 700);
-        var imgData = canvas.toDataURL("image/png");
-        var canvasImage = document.getElementById('canvas-img');
-        canvasImage.setAttribute('src' , imgData);
+        ctx.fillRect(0, 0, deviceSize[0], deviceSize[1]);
+
+        let imageObj1 = new Image();
+        imageObj1.src = iPhone13Image;
+        imageObj1.onload = function() {
+            const setDeviceWidth = deviceSize[1]/2;
+            const setDeviceHeight = deviceSize[0]/2;
+            ctx.drawImage(imageObj1, 1500, 250, setDeviceWidth, setDeviceHeight);
+            let imgData = canvas.toDataURL("image/png");
+            let canvasImage = document.getElementById('canvas-img');
+            canvasImage.setAttribute('src' , imgData);
+        }
+        console.log()
     }, []);
 
     const fileLoad = e => {
@@ -41,58 +55,45 @@ export function PageWindow() {
     }
 
     const mergeImage = (image) => {
-        var canvas = document.getElementById("canvas");
-        canvas.width = 700;
-        canvas.height = 700;
-        var ctx = canvas.getContext("2d");
-        var grd = ctx.createLinearGradient(0, 0, 700, 0);
+        let canvas = document.getElementById("canvas");
+        canvas.width = deviceSize[0];
+        canvas.height = deviceSize[1];
+        let ctx = canvas.getContext("2d");
+        let grd = ctx.createLinearGradient(0, 0, 700, 0);
         grd.addColorStop(0, "red");
         grd.addColorStop(1, "white");
         ctx.fillStyle = grd;
-        ctx.fillRect(0, 0, 700, 700);
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        var imageObj1 = new Image();
-        var imageObj2 = new Image();
+        let imageObj1 = new Image();
+        let imageObj2 = new Image();
         imageObj1.src = paperImage;
         imageObj2.src = image;
         imageObj1.onload = function() {
             ctx.drawImage(imageObj1, 0, 0, 400, 400);
             imageObj2.onload = function() {
                 ctx.drawImage(imageObj2, 200, 200, 300, 300);
-                var imgData = canvas.toDataURL("image/png");
-                var canvasImage = document.getElementById('canvas-img');
+                let imgData = canvas.toDataURL("image/png");
+                let canvasImage = document.getElementById('canvas-img');
                 canvasImage.setAttribute('src' , imgData);
             }
         };
-    }
-
-    function setupImage(){
-        const img = new Image();
-        setImgElement(paperImage);
-        /*
-        const img = new Image();
-        let canvas = document.getElementById("canvas");
-        canvas.width = 700;
-        canvas.height = 700;
-        let ctx = canvas.getContext("2d");
-        let grd = ctx.createLinearGradient(0, 0, 700, 0);
-        grd.addColorStop(0, '#314755');
-        grd.addColorStop(1, '#26a0da');
-        ctx.fillStyle = grd;
-        ctx.fillRect(0, 0, 700, 700);
-        ctx.drawImage(img, left, top, width, height);
-        setImgElement(img);*/
     }
     
     return (
         <div className="web-page">
             <TopMenu />
-            <h1>圖片預覽與檔案上傳</h1>
-            <input type="file" onChange={uploadImage} />
-            <div className="preview-block">
-                <canvas id="canvas"><img id="canvas-img" /></canvas>
+            <div className="preview-left-block">
+                <SideMenu />
             </div>
-            <button onClick={submit}>上傳</button>
+            <div className="preview-right-block">
+                <h1>圖片預覽與檔案上傳</h1>
+                <input type="file" onChange={uploadImage} />
+                <div className="preview-block">
+                    <canvas id="canvas"><img id="canvas-img" /></canvas>
+                </div>
+                <button onClick={submit}>上傳</button>
+            </div>
         </div>
     );
 }

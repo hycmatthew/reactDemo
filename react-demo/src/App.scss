@@ -17,13 +17,12 @@
 
 .preview-block{
     margin: 0 auto;
-    width: 20%;
     img{
         width: 100%;
     }
     canvas{
-        width: 500px;
-        height: 500px;
+        padding: 1%;
+        width: 90%;
     }
 }
 
@@ -43,4 +42,20 @@
         display: inline-block;
         width: 22%;
     }
+}
+
+.preview-left-block, .preview-right-block{
+    display: inline-block;
+    padding-top: 10px;
+}
+
+.preview-left-block{
+    display: inline-block;
+    vertical-align: top;
+    width: 25%;
+}
+
+.preview-right-block{
+    display: inline-block;
+    width: 75%;
 }

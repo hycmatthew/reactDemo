@@ -28,7 +28,7 @@ export function MainPage() {
                 </CardContent>
                 <CardActions>
                     <Button size="small">Share</Button>
-                    <Link to="/preview"><Button size="small">Learn More</Button></Link>
+                    <Link to={{ pathname: '/preview', state: { previewId: id }}}><Button size="small">Learn More</Button></Link>
                 </CardActions>
             </Card>
         );
