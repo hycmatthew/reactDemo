@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useReducer }  from "react";
-import { TopMenu } from './TopMenu.js'; 
-import { SideMenu } from "./SideMenu.js";
+import React, { useState, useEffect, useReducer, useContext }  from "react";
 import paperImage from './paper.png';
 import iPhone13Image from './iPhone 13 - Moonlight.png';
 import { useLocation } from "react-router";
+import { TopMenu } from './TopMenu.js'; 
+import { SideMenu } from "./SideMenu.js";
+import { Context } from "./ImageContext.js";
 
 export function PageWindow() {
     
+    const { state, dispatch } = useContext(Context);
+
     const emp = useLocation();
     const [img, setImg] = useState('');
     const deviceSize = [2532,1170];
@@ -87,7 +90,7 @@ export function PageWindow() {
                 <SideMenu />
             </div>
             <div className="preview-right-block">
-                <h1>圖片預覽與檔案上傳</h1>
+                <h1>{state.inputText}</h1>
                 <input type="file" onChange={uploadImage} />
                 <div className="preview-block">
                     <canvas id="canvas"><img id="canvas-img" /></canvas>

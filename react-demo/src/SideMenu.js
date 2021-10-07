@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer }  from "react";
+import React, { useState, useEffect, useReducer, useContext }  from "react";
 import ListSubheader from '@material-ui/core/ListSubheader';
 import List from '@material-ui/core/List';
 import ListItemButton from '@material-ui/core/ListItemButton';
@@ -11,26 +11,12 @@ import TextField from '@material-ui/core/TextField';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import StarBorder from '@material-ui/icons/StarBorder';
-
-function dataReducer(state, action) {
-    switch (action.type) {
-        case 'updateTextStr':
-            console.log({ ...state, 'inputText': action.inputText});
-            return { ...state, 'inputText': action.inputText};
-        default: 
-            return state
-    }
-};
-
-const initialState = {
-    inputText: '',
-};
+import { Context } from "./ImageContext.js";
 
 export function SideMenu() {
     const [openScreenshot, setOpenScreenshot] = React.useState(true);
     const [openText, setOpenText] = React.useState(true);
-    //const [textData, setTextData] = React.useState('');
-    const [state, dispatch] = useReducer(dataReducer, initialState);
+    const { state, dispatch } = useContext(Context);
 
     const updateScreenshotList = () => {
         setOpenScreenshot(!openScreenshot);
@@ -42,10 +28,6 @@ export function SideMenu() {
     const updateInputText = (str) => {
         dispatch({ type: 'updateTextStr', inputText: str});
     }
-    /*
-    useEffect(() => {
-        console.log("new = "+textData);
-    },[textData])*/
 
     return (
         <List subheader={<ListSubheader component="div" id="nested-list-subheader">Setup</ListSubheader>}>
