@@ -8,14 +8,20 @@ export function Context(){
 }
 
  const initialState = {
+    imageFiles: {},
+    containImage: false,
     inputText: '',
+    backgroundColor: '',
 };
 
 function dataReducer(state, action) {
     switch (action.type) {
         case 'updateTextStr':
-            console.log({ ...state, 'inputText': action.inputText});
             return { ...state, 'inputText': action.inputText};
+        case 'updateInputImage':
+            return { ...state, 'imageFiles': action.imageFiles, 'containImage': action.containImage};
+        case 'updateBackgroundColor':
+            return { ...state, 'backgroundColor': action.backgroundColor};    
         default: 
             return state
     }
