@@ -59,3 +59,31 @@
     display: inline-block;
     width: 75%;
 }
+
+.material-picker{
+    display: block;
+}
+
+.background-color-block{
+    padding: 5px;
+    border-radius: 1px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.1);
+    display: inline-block;
+    cursor: pointer;
+
+    .background-color-btn{
+        width: 36px;
+        height: 14px;
+        border-radius: 2px;
+    }
+}
+
+.background-color-popup{
+    position: absolute;
+    z-index: 2;
+
+    .background-color-cover{
+        position: fixed;
+        inset: 0px;
+    }
+}

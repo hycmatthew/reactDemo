@@ -5,7 +5,6 @@ import { useLocation } from "react-router";
 import { TopMenu } from './TopMenu.js'; 
 import { SideMenu } from "./SideMenu.js";
 import { Context } from "./ImageContext.js";
-import regeneratorRuntime from "regenerator-runtime";
 
 export function PageWindow() {
     
@@ -50,8 +49,8 @@ export function PageWindow() {
         canvas.height = deviceSize[0];
         let ctx = canvas.getContext("2d");
         let grd = ctx.createLinearGradient(0, 0, deviceSize[1], deviceSize[0]);
-        grd.addColorStop(0, '#314755');
-        grd.addColorStop(1, '#26a0da');
+        grd.addColorStop(0, state.backgroundColor);
+        grd.addColorStop(1, state.backgroundColor);
         ctx.fillStyle = grd;
         ctx.fillRect(0, 0, deviceSize[1], deviceSize[0]);
 
