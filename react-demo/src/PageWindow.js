@@ -4,7 +4,7 @@ import iPhone13Image from './iPhone 13 - Moonlight.png';
 import { useLocation } from "react-router";
 import { TopMenu } from './TopMenu.js'; 
 import { SideMenu } from "./SideMenu.js";
-import { Context } from "./ImageContext.js";
+import { Context, backgroundTypeEnum } from "./ImageContext.js";
 
 export function PageWindow() {
     
@@ -44,13 +44,43 @@ export function PageWindow() {
     }
 
     useEffect(() => {
+        let setStartX = parseInt(state.deviceXPos);
+        let setStartY = parseInt(state.deviceYPos);
+
         let canvas = document.getElementById("canvas");
         canvas.width = deviceSize[1];
         canvas.height = deviceSize[0];
         let ctx = canvas.getContext("2d");
-        let grd = ctx.createLinearGradient(0, 0, deviceSize[1], deviceSize[0]);
-        grd.addColorStop(0, state.backgroundColor);
-        grd.addColorStop(1, state.backgroundColor);
+        
+        let setGradientX = deviceSize[1];
+        let setGradientY = deviceSize[0];
+        if(parseInt(state.backgroundDirection) === 0){
+            setGradientX = 0;
+        }else{
+            setGradientY = 0;
+        }
+
+        let grd = ctx.createLinearGradient(0, 0, setGradientX,setGradientY);
+        if(state.backgroundType == backgroundTypeEnum.single){
+            grd.addColorStop(0, state.backgroundColor[0].color);
+            grd.addColorStop(1, state.backgroundColor[0].color);
+        }else{
+            let haveFirstZero = false;
+            for (let value of state.backgroundColor.values()){
+                console.log(value);
+                let setPos = parseInt(value.colorPos)/100;
+                if(setPos !== null && setPos < 101){
+                    if(setPos == 0){
+                        if(haveFirstZero === false){
+                            haveFirstZero = true
+                            grd.addColorStop(setPos, value.color);
+                        }
+                    }else{
+                        grd.addColorStop(setPos, value.color);
+                    }
+                }
+            }
+        }
         ctx.fillStyle = grd;
         ctx.fillRect(0, 0, deviceSize[1], deviceSize[0]);
 
@@ -58,8 +88,16 @@ export function PageWindow() {
         ctx.font = setStyle.fontSize + 'px ' + setStyle.fontFamily;
         ctx.textAlign = setStyle.textAlign;
         ctx.textBaseline = setStyle.textBaseline;
-        ctx.fillStyle = setStyle.color;
-        ctx.fillText(state.inputText, 200, 500);
+        ctx.fillStyle = state.fontColor;
+        ctx.textAlign = state.fontAlign;
+        ctx.font = (state.fontSize.toString()+"px "+state.fontFamily);
+
+        let textArray = state.inputText.split(/\r?\n/);
+        let y = 500;
+        for (var i = 0; i < textArray.length; i++) {
+            ctx.fillText(textArray[i], setStartX/2, y);
+            y += parseInt(state.fontSize);    
+        }
 
         if(state.containImage){
             (async () => {
@@ -69,9 +107,9 @@ export function PageWindow() {
                 const setDeviceHeight = deviceSize[1]/2;
 
                 const screenLoad = await screenImageLoad();
-                ctx.drawImage(screenLoad, 1500+57, 250+42, setScreenWidth, setScreenHeight);
+                ctx.drawImage(screenLoad, setStartX+57, setStartY+42, setScreenWidth, setScreenHeight);
                 const deviceLoad = await deviceImageLoad();
-                ctx.drawImage(deviceLoad, 1500, 250, setDeviceWidth, setDeviceHeight);
+                ctx.drawImage(deviceLoad, setStartX, setStartY, setDeviceWidth, setDeviceHeight);
 
                 let imgData = canvas.toDataURL("image/png");
                 let canvasImage = document.getElementById('canvas-img');
@@ -84,7 +122,7 @@ export function PageWindow() {
             imageObj1.onload = function() {
                 const setDeviceWidth = deviceSize[0]/2;
                 const setDeviceHeight = deviceSize[1]/2;
-                ctx.drawImage(imageObj1, 1500, 250, setDeviceWidth, setDeviceHeight);
+                ctx.drawImage(imageObj1, setStartX, setStartY, setDeviceWidth, setDeviceHeight);
                 let imgData = canvas.toDataURL("image/png");
                 let canvasImage = document.getElementById('canvas-img');
                 canvasImage.setAttribute('src' , imgData);
@@ -108,32 +146,6 @@ export function PageWindow() {
         reader.onload = function(result){
             setImg(this.result);
             mergeImage(this.result);
-        };
-    }
-
-    const mergeImage = (image) => {
-        let canvas = document.getElementById("canvas");
-        canvas.width = deviceSize[0];
-        canvas.height = deviceSize[1];
-        let ctx = canvas.getContext("2d");
-        let grd = ctx.createLinearGradient(0, 0, 700, 0);
-        grd.addColorStop(0, "red");
-        grd.addColorStop(1, "white");
-        ctx.fillStyle = grd;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        let imageObj1 = new Image();
-        let imageObj2 = new Image();
-        imageObj1.src = paperImage;
-        imageObj2.src = image;
-        imageObj1.onload = function() {
-            ctx.drawImage(imageObj1, 0, 0, 400, 400);
-            imageObj2.onload = function() {
-                ctx.drawImage(imageObj2, 200, 200, 300, 300);
-                let imgData = canvas.toDataURL("image/png");
-                let canvasImage = document.getElementById('canvas-img');
-                canvasImage.setAttribute('src' , imgData);
-            }
         };
     }
     

@@ -78,12 +78,6 @@
     }
 }
 
-.background-color-popup{
-    position: absolute;
-    z-index: 2;
-
-    .background-color-cover{
-        position: fixed;
-        inset: 0px;
-    }
+.background-color-text{
+    color: #000;
 }
