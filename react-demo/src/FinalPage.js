@@ -7,6 +7,7 @@ import { SideMenu } from "./SideMenu.js";
 import { Context, backgroundTypeEnum } from "./ImageContext.js";
 
 export function PageWindow() {
+    
     const { state, dispatch } = useContext(Context);
 
     const emp = useLocation();
@@ -41,7 +42,10 @@ export function PageWindow() {
     }
 
     useEffect(() => {
-        let canvas = document.getElementById("canvas-bg");
+        let setStartX = parseInt(state.deviceXPos);
+        let setStartY = parseInt(state.deviceYPos);
+
+        let canvas = document.getElementById("canvas");
         canvas.width = deviceSize[1];
         canvas.height = deviceSize[0];
         let ctx = canvas.getContext("2d");
@@ -77,20 +81,20 @@ export function PageWindow() {
         ctx.fillStyle = grd;
         ctx.fillRect(0, 0, deviceSize[1], deviceSize[0]);
 
-        let imgData = canvas.toDataURL("image/png");
-        let canvasImage = document.getElementById('canvas-img-bg');
-        canvasImage.setAttribute('src' , imgData);
-    }, [state.backgroundColor, state.backgroundDirection, state.backgroundColor]);
+        const setStyle = { fontSize:50, fontFamily:'Arial', color:'black', textAlign:'left', textBaseline:'top' };
+        ctx.font = setStyle.fontSize + 'px ' + setStyle.fontFamily;
+        ctx.textAlign = setStyle.textAlign;
+        ctx.textBaseline = setStyle.textBaseline;
+        ctx.fillStyle = state.fontColor;
+        ctx.textAlign = state.fontAlign;
+        ctx.font = (state.fontSize.toString()+"px "+state.fontFamily);
 
-
-    useEffect(() => {
-        let setStartX = parseInt(state.deviceXPos);
-        let setStartY = parseInt(state.deviceYPos);
-
-        let canvas = document.getElementById("canvas-device");
-        canvas.width = deviceSize[1];
-        canvas.height = deviceSize[0];
-        let ctx = canvas.getContext("2d");
+        let textArray = state.inputText.split(/\r?\n/);
+        let y = 500;
+        for (var i = 0; i < textArray.length; i++) {
+            ctx.fillText(textArray[i], setStartX/2, y);
+            y += parseInt(state.lineHeight);    
+        }
 
         if(state.containImage){
             (async () => {
@@ -117,41 +121,11 @@ export function PageWindow() {
                 const setDeviceHeight = deviceSize[1]/2;
                 ctx.drawImage(imageObj1, setStartX, setStartY, setDeviceWidth, setDeviceHeight);
                 let imgData = canvas.toDataURL("image/png");
-                let canvasImage = document.getElementById('canvas-img-device');
+                let canvasImage = document.getElementById('canvas-img');
                 canvasImage.setAttribute('src' , imgData);
             }
         }
-    }, [state.imageFiles, state.containImage, state.deviceXPos, state.deviceYPos, state.deviceSize]);
-
-    useEffect(() => {
-        let setStartX = parseInt(state.deviceXPos);
-        let setStartY = parseInt(state.deviceYPos);
-
-        let canvas = document.getElementById("canvas-text");
-        canvas.width = deviceSize[1];
-        canvas.height = deviceSize[0];
-        let ctx = canvas.getContext("2d");
-        
-        const setStyle = { fontSize:50, fontFamily:'Arial', color:'black', textAlign:'left', textBaseline:'top' };
-        ctx.font = setStyle.fontSize + 'px ' + setStyle.fontFamily;
-        ctx.textAlign = setStyle.textAlign;
-        ctx.textBaseline = setStyle.textBaseline;
-        ctx.fillStyle = state.fontColor;
-        ctx.textAlign = state.fontAlign;
-        ctx.font = (state.fontSize.toString()+"px "+state.fontFamily);
-
-        let textArray = state.inputText.split(/\r?\n/);
-        let y = 500;
-        for (var i = 0; i < textArray.length; i++) {
-            ctx.fillText(textArray[i], setStartX/2, y);
-            y += parseInt(state.lineHeight);    
-        }
-
-        let imgData = canvas.toDataURL("image/png");
-        let canvasImage = document.getElementById('canvas-img-text');
-        canvasImage.setAttribute('src' , imgData);
-    }, [state.fontAlign, state.fontFamily, state.fontSize, state.lineHeight, state.fontColor, state.inputText]);
-
+    }, [state]);
 
     const fileLoad = e => {
         this.setState({
@@ -179,11 +153,11 @@ export function PageWindow() {
                 <SideMenu />
             </div>
             <div className="preview-right-block">
+                <h1>{state.inputText}</h1>
                 <div className="preview-block">
-                    <canvas id="canvas-bg" styles="z-index: 1;"><img id="canvas-img-bg" /></canvas>
-                    <canvas id="canvas-device" styles="z-index: 2;"><img id="canvas-img-device" /></canvas>
-                    <canvas id="canvas-text" styles="z-index: 3;"><img id="canvas-img-text" /></canvas>
+                    <canvas id="canvas"><img id="canvas-img" /></canvas>
                 </div>
+                <button onClick={submit}>上傳</button>
             </div>
         </div>
     );

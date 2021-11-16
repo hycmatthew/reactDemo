@@ -22,16 +22,16 @@ const initialState = {
     deviceSize: 2,
     fontFamily: 'Arial',
     fontSize: 80,
+    lineHeight: 90,
     fontColor: '#ffffff',
     fontAlign: 'center',
     inputText: '',
     backgroundType: backgroundTypeEnum.single,
     backgroundDirection: 0,
-    backgroundColor: [{ id: 0, color: '#f9d39a', colorPos: 0}, { id: 1, color: '#f9d39a', colorPos: 0}],
+    backgroundColor: [{ id: 0, color: '#24C6DC', colorPos: 0 },{ id: 1, color: '#514A9D', colorPos: 100}],
 };
 
 function dataReducer(state, action) {
-    console.log(action);
     switch (action.type) {
         case 'updateDeviceXPosition':
             return { ...state, 'deviceXPos': action.deviceXPos};
@@ -49,6 +49,8 @@ function dataReducer(state, action) {
             return { ...state, 'fontFamily': action.fontFamily};
         case 'updateTextFontSize':
             return { ...state, 'fontSize': action.fontSize};
+        case 'updateTextLineHeight':
+            return { ...state, 'lineHeight': action.lineHeight};
         case 'updateTextFontColor':
             return { ...state, 'fontColor': action.fontColor};
         case 'updateInputImage':
