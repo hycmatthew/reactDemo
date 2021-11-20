@@ -35,6 +35,7 @@ import Select from '@material-ui/core/Select';
 import { makeStyles,styled } from "@material-ui/styles";
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import { backgroundTypeEnum, deviceInitPosition, Context } from "./ImageContext.js";
+import { v4 as uuidv4 } from 'uuid';
 
 const useStyles = makeStyles(theme => ({
     colorField: {
@@ -59,6 +60,7 @@ export function SideMenu(props) {
         inputText: "",
         inputAlignment: "center",
         inputFontFamily: "Arial",
+        inputFontWeight: 400,
         inputFontSize: 80,
         inputFontColor: '#ffffff',
         inputLineHeight: 90
@@ -90,6 +92,16 @@ export function SideMenu(props) {
         return '#' + rgb.toString(16).padStart(6, 0)  
     }
 
+    function ValidateFileUpload(e) {
+        const imageFile = e.target.files[0];
+        
+        if (!imageFile.name.match(/\.(jpg|jpeg|png)$/)) {
+            alert('Please select valid image.');
+            return false;
+        }
+        return true
+    }
+
     const updateSizeSettingList = () => {
         setOpenSizeSetting(!openSizeSetting);
     }
@@ -113,7 +125,7 @@ export function SideMenu(props) {
     };
 
     const addBackgroundColorNum = () => {
-        let setNum = colorList.length;
+        let setNum = uuidv4();
         let newList = [...colorList, { id: setNum, color: '#f9d39a', colorPos: 0 }];
         setColorList(newList);
     }
@@ -121,6 +133,7 @@ export function SideMenu(props) {
     const deleteBackgroundColorNum = (num) => {
         let newList = [...colorList];
         newList.splice(num,1);
+        console.log("-"+num);
         setColorList(newList);
     }
 
@@ -138,7 +151,7 @@ export function SideMenu(props) {
     }
 
     const updateDeviceSize = (e, size) => {
-        setDeviceSetting(prevState => ({ ...prevState, deviceSize: size }))
+        setDeviceSetting(prevState => ({ ...prevState, size: size }))
         dispatch({ type: 'updateDeviceSize', deviceSize: size});
     }
 
@@ -169,6 +182,12 @@ export function SideMenu(props) {
         dispatch({ type: 'updateTextFontFamily', fontFamily: fontFamily});
     }
 
+    const updateTextFontWeight = (fontWeight) => {
+        setTextSetting(prevState => ({ ...prevState, inputFontWeight: fontWeight }))
+        dispatch({ type: 'updateTextFontWeight', fontWeight: fontWeight});
+    }
+
+
     const updateLineHeight = (lineHeight) => {
         const re = /^[0-9\b]{1,3}$/;
         if (lineHeight === '' || re.test(lineHeight)) {
@@ -193,17 +212,28 @@ export function SideMenu(props) {
         dispatch({ type: 'updateInputImage', imageFiles: e.target.files[0], containImage: true});
     }
 
-    const backgroundColorBlockChange = (setId, colorHex) => {
-        if(hexColorValidation(colorHex)){
-            let newList = colorList.map(item => {
-                if(item.id === setId){
-                    item.color = colorHex
-                }
-                return item
-            });
-            updateBackgroundColor(backgroundType, newList);
-            setColorList(newList);
+    const uploadBackgroundImage = (e) =>{
+        console.log(e);
+        if(ValidateFileUpload(e)){
+            console.log(e.target.files[0]);
+            dispatch({ type: 'updateBackgroundImage', backgroundImageFile: e.target.files[0]});
         }
+    }
+
+    const backgroundColorBlockChange = (setId, colorHex) => {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            if(hexColorValidation(colorHex)){
+                let newList = colorList.map(item => {
+                    if(item.id === setId){
+                        item.color = colorHex
+                    }
+                    return item
+                });
+                updateBackgroundColor(backgroundType, newList);
+                setColorList(newList);
+            }
+        }, 8);
     }
 
     const backgroundColorPositionChange = (setId, pos) => {
@@ -227,8 +257,11 @@ export function SideMenu(props) {
 
     const updateFontColor = (color) => {
         if(hexColorValidation(color)){
-            setTextSetting(prevState => ({...prevState, inputFontColor: color}));
-            dispatch({ type: 'updateTextFontColor', fontColor: color});
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                setTextSetting(prevState => ({...prevState, inputFontColor: color}));
+                dispatch({ type: 'updateTextFontColor', fontColor: color});
+            }, 10);
         }
     }
 
@@ -242,19 +275,30 @@ export function SideMenu(props) {
         return tempFontFamilyList
     }
 
+    const setFontWeightBlock = () =>{
+        let fontWeightList = [100,200,300,400,500,600,700,800,900];
+        let tempFontWeightList = [];
+        for(let i=0; i<=fontWeightList.length-1; i++){
+            tempFontWeightList.push(
+                <MenuItem key={fontWeightList[i]} value={ fontWeightList[i] }>{ fontWeightList[i]}</MenuItem>
+            );
+        }
+        return tempFontWeightList
+    }
+
     const setBackgroundBlock = () =>{
         if(backgroundType === backgroundTypeEnum.single){
             return (
                 <ListItem>
                     <div>
                         <div className="background-color-block">
-                            <div className="background-color-btn" style={{background: colorList[0].color}} />
+                            <input id="color" type="color" value={colorList[0].color} onChange={e => backgroundColorBlockChange(colorList[0].id, e.target.value)}/>
                         </div>
-                        <TextField size="small" label="Color" defaultValue={colorList[0].color} onChange={e => backgroundColorBlockChange(1, e.target.value)}/>
+                        <TextField size="small" label="Color" value={colorList[0].color} onChange={e => backgroundColorBlockChange(colorList[0].id, e.target.value)}/>
                     </div>
                 </ListItem>
             );
-        }else{
+        }else if(backgroundType === backgroundTypeEnum.gradient){
             let blockPickerList = [];
             if(colorList.length > 5){
                 blockPickerList.push(
@@ -286,10 +330,10 @@ export function SideMenu(props) {
                     blockPickerList.push(
                         <ListItem key={colorList[i].id}>
                             <div className="background-color-block">
-                                <div className="background-color-btn" style={{background: colorList[i].color}} />
+                                <input id="color" type="color" value={colorList[i].color} onChange={e => backgroundColorBlockChange(colorList[i].id, e.target.value)}/>
                             </div>
-                            <TextField width="100px" size="small" label="Color" defaultValue={colorList[i].color} onChange={e => backgroundColorBlockChange(i, e.target.value)}/>
-                            <TextField width="100px" size="small" label="Position" defaultValue={colorList[i].colorPos} onChange={e => backgroundColorPositionChange(i, e.target.value)}/>
+                            <TextField width="100px" size="small" label="Color" value={colorList[i].color} onChange={e => backgroundColorBlockChange(colorList[i].id, e.target.value)}/>
+                            <TextField width="100px" size="small" label="Position" defaultValue={colorList[i].colorPos} onChange={e => backgroundColorPositionChange(colorList[i].id, e.target.value)}/>
                             <IconButton aria-label="delete" disabled color="primary">
                                 <DeleteIcon />
                             </IconButton>
@@ -299,10 +343,10 @@ export function SideMenu(props) {
                     blockPickerList.push(
                         <ListItem key={colorList[i].id}>
                             <div className="background-color-block">
-                                <div className="background-color-btn" style={{background: colorList[i].color}} />
+                                <input id="color" type="color" value={colorList[i].color} onChange={e => backgroundColorBlockChange(colorList[i].id, e.target.value)}/>
                             </div>
-                            <TextField width="100px" size="small" label="Color" defaultValue={colorList[i].color} onChange={e => backgroundColorBlockChange(i, e.target.value)}/>
-                            <TextField width="100px" size="small" label="Position" defaultValue={colorList[i].colorPos} onChange={e => backgroundColorPositionChange(i, e.target.value)}/>
+                            <TextField width="100px" size="small" label="Color" value={colorList[i].color} onChange={e => backgroundColorBlockChange(colorList[i].id, e.target.value)}/>
+                            <TextField width="100px" size="small" label="Position" defaultValue={colorList[i].colorPos} onChange={e => backgroundColorPositionChange(colorList[i].id, e.target.value)}/>
                             
                             <IconButton aria-label="delete" onClick={e => deleteBackgroundColorNum(i) } color="primary">
                                 <DeleteIcon />
@@ -312,12 +356,19 @@ export function SideMenu(props) {
                 }
             }
             return blockPickerList;
+        }else if(backgroundType === backgroundTypeEnum.image){
+            return (<ListItem>
+                <ListItemIcon>
+                <StarBorder />
+                </ListItemIcon>
+                <input type="file" onChange={uploadBackgroundImage} />
+            </ListItem>)
         }
     }
 
     return (
         <ThemeProvider theme={theme}>
-            <List className="side-main-list" subheader={<ListSubheader component="div" id="nested-list-subheader">Setup</ListSubheader>}>
+            <List className="side-main-list" subheader={<ListSubheader component="div" id="nested-list-subheader">Screenshot Setup</ListSubheader>}>
                 <ListItemButton className="upload-image-submenu" onClick={updateSizeSettingList}>
                     <ListItemIcon>
                     <InboxIcon />
@@ -327,8 +378,8 @@ export function SideMenu(props) {
                 </ListItemButton>
                 <Collapse in={openSizeSetting} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
-                    <ListItemButton>
-                        <ToggleButtonGroup value={deviceSetting.deviceSize} exclusive onChange={ updateDeviceSize } aria-label="text alignment">
+                    <ListItem>
+                        <ToggleButtonGroup value={deviceSetting.size} exclusive onChange={ updateDeviceSize } aria-label="text alignment">
                             <ToggleButton value={1} aria-label="left aligned">
                                 <CropPortraitIcon fontSize="small" />
                             </ToggleButton>
@@ -339,11 +390,11 @@ export function SideMenu(props) {
                                 <CropPortraitIcon fontSize="large" />
                             </ToggleButton>
                         </ToggleButtonGroup>
-                    </ListItemButton>
-                    <ListItemButton>
+                    </ListItem>
+                    <ListItem>
                         <TextField size="small" label="Position X" value={deviceSetting.deviceXPos} onChange={e => updateDeviceXPosition(e.target.value)}/>
                         <TextField size="small" label="Position Y" value={deviceSetting.deviceYPos} onChange={e => updateDeviceYPosition(e.target.value)}/>
-                    </ListItemButton>
+                    </ListItem>
                     </List>
                 </Collapse>
                 <ListItemButton className="upload-image-submenu" onClick={updateScreenshotList}>
@@ -355,12 +406,12 @@ export function SideMenu(props) {
                 </ListItemButton>
                 <Collapse in={openScreenshot} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
-                    <ListItemButton>
+                    <ListItem>
                         <ListItemIcon>
                         <StarBorder />
                         </ListItemIcon>
                         <input type="file" onChange={uploadImage} />
-                    </ListItemButton>
+                    </ListItem>
                     </List>
                 </Collapse>
                 <ListItemButton className="set-background-submenu" onClick={updateBackgroundList}>
@@ -376,6 +427,7 @@ export function SideMenu(props) {
                             <ToggleButtonGroup color="primary" value={backgroundType} exclusive onChange={e => updateBackgroundType(e.target.value)}>
                             <ToggleButton value={backgroundTypeEnum.single}>Single Color</ToggleButton>
                             <ToggleButton value={backgroundTypeEnum.gradient}>Gradient</ToggleButton>
+                            <ToggleButton value={backgroundTypeEnum.image}>Image</ToggleButton>
                             </ToggleButtonGroup>
                         </ListItem>
                         { setBackgroundBlock() }
@@ -390,7 +442,7 @@ export function SideMenu(props) {
                 </ListItemButton>
                 <Collapse in={openText} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
-                    <ListItemButton>
+                    <ListItem>
                         <ToggleButtonGroup value={textSetting.inputAlignment} exclusive onChange={ (e, value) => handleAlignment(value)} aria-label="text alignment">
                             <ToggleButton value="left" aria-label="left aligned">
                                 <FormatAlignLeftIcon />
@@ -401,26 +453,27 @@ export function SideMenu(props) {
                             <ToggleButton value="right" aria-label="right aligned">
                                 <FormatAlignRightIcon />
                             </ToggleButton>
-                            <ToggleButton value="justify" aria-label="justified">
-                                <FormatAlignJustifyIcon />
-                            </ToggleButton>
                         </ToggleButtonGroup>
-                    </ListItemButton>
-                    <ListItemButton>
-                        <Box sx={{ minWidth: 120 }}>
-                            <FormControl fullWidth>
+                    </ListItem>
+                    <ListItem>
+                        <Box sx={{ minWidth: 300 }}>
+                            <FormControl sx={{ minWidth: 200 }}>
                                 <InputLabel id="demo-simple-select-label">Font Family</InputLabel>
                                 <Select value={textSetting.inputFontFamily} label="Font-Family" onChange={ e => updateTextFontFamily(e.target.value) }>
                                 { setFontFamilyBlock() }
                                 </Select>
                             </FormControl>
+                            <FormControl sx={{ minWidth: 100 }}>
+                                <InputLabel id="demo-simple-select-label">Font Weight</InputLabel>
+                                <Select value={textSetting.inputFontWeight} label="Font-Family" onChange={ e => updateTextFontWeight(e.target.value) }>
+                                { setFontWeightBlock() }
+                                </Select>
+                            </FormControl>
                         </Box>
-                    </ListItemButton>
-                    <ListItemButton>
+                    </ListItem>
+                    <ListItem>
                         <Box sx={{ width: 250 }}>
-                            <Typography id="input-slider" gutterBottom>
-                                Volume
-                            </Typography>
+                            <Typography id="input-slider" gutterBottom>Font Size</Typography>
                             <Grid container spacing={2} alignItems="center">
                                 <Grid item xs>
                                     <Slider value={textSetting.inputFontSize}  aria-labelledby="input-slider" onChange={ e => updateTextFontSize(e.target.value) } />
@@ -430,24 +483,24 @@ export function SideMenu(props) {
                                 </Grid>
                             </Grid>
                         </Box>
-                    </ListItemButton>
-                    <ListItemButton>
+                    </ListItem>
+                    <ListItem>
                         <TextField size="small" label="Line-Height" value={textSetting.inputLineHeight} onChange={e => updateLineHeight(e.target.value)}/>
-                    </ListItemButton>
-                    <ListItemButton>
+                    </ListItem>
+                    <ListItem>
                         <div>
                             <div className="background-color-block">
-                                <div className="background-color-btn" style={{background: textSetting.inputFontColor}} />
+                                <input id="color" type="color" value={textSetting.inputFontColor} onChange={e => updateFontColor(e.target.value)}/>
                             </div>
-                            <TextField size="small" defaultValue={textSetting.inputFontColor} onChange={e => updateFontColor(e.target.value)}/>
+                            <TextField size="small" value={textSetting.inputFontColor} onChange={e => updateFontColor(e.target.value)}/>
                         </div>
-                    </ListItemButton>
-                    <ListItemButton>
+                    </ListItem>
+                    <ListItem>
                         <ListItemIcon>
                         <StarBorder />
                         </ListItemIcon>
                         <TextField size="small" fullWidth id="outlined-basic" label="Text" variant="outlined" onChange={e => updateInputText(e.target.value)} multiline rows={4} />
-                    </ListItemButton>
+                    </ListItem>
                     </List>
                 </Collapse>
             </List>

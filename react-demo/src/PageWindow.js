@@ -41,13 +41,18 @@ export function PageWindow() {
     }
 
     useEffect(() => {
+        console.log(state.deviceType);
+        let setScreenWidth = state.deviceType.height;
+        let setScreenHeight = state.deviceType.width;
+
         let canvas = document.getElementById("canvas-bg");
-        canvas.width = deviceSize[1];
-        canvas.height = deviceSize[0];
+        canvas.width = setScreenWidth;
+        canvas.height = setScreenHeight;
         let ctx = canvas.getContext("2d");
         
-        let setGradientX = deviceSize[1];
-        let setGradientY = deviceSize[0];
+        let setGradientX = setScreenWidth;
+        let setGradientY = setScreenHeight;
+
         if(parseInt(state.backgroundDirection) === 0){
             setGradientX = 0;
         }else{
@@ -58,7 +63,10 @@ export function PageWindow() {
         if(state.backgroundType == backgroundTypeEnum.single){
             grd.addColorStop(0, state.backgroundColor[0].color);
             grd.addColorStop(1, state.backgroundColor[0].color);
-        }else{
+
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, setScreenWidth, setScreenHeight);
+        }else if(state.backgroundType == backgroundTypeEnum.gradient){
             let haveFirstZero = false;
             for (let value of state.backgroundColor.values()){
                 let setPos = parseInt(value.colorPos)/100;
@@ -73,34 +81,50 @@ export function PageWindow() {
                     }
                 }
             }
-        }
-        ctx.fillStyle = grd;
-        ctx.fillRect(0, 0, deviceSize[1], deviceSize[0]);
 
-        let imgData = canvas.toDataURL("image/png");
-        let canvasImage = document.getElementById('canvas-img-bg');
-        canvasImage.setAttribute('src' , imgData);
-    }, [state.backgroundColor, state.backgroundDirection, state.backgroundColor]);
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, setScreenWidth, setScreenHeight);
+        }else if(state.backgroundType == backgroundTypeEnum.image){
+            
+            if(state.backgroundImageFile !== ""){
+                let backgroundImage = new Image();
+                const reader = new FileReader();
+                reader.onload=()=>{
+                    backgroundImage.src = reader.result;
+                }
+                reader.readAsDataURL(state.backgroundImageFile);
+
+                backgroundImage.onload = function() {
+                    ctx.drawImage(backgroundImage, 0, 0, setScreenWidth, setScreenHeight);
+                    let imgData = canvas.toDataURL("image/png");
+                    let canvasImage = document.getElementById('canvas-img-bg');
+                    canvasImage.setAttribute('src' , imgData);
+                }
+            }
+        }
+    }, [state.backgroundType ,state.backgroundColor, state.backgroundDirection, state.backgroundColor, state.backgroundImageFile]);
 
 
     useEffect(() => {
         let setStartX = parseInt(state.deviceXPos);
         let setStartY = parseInt(state.deviceYPos);
+        let setScreenWidth = screenSize[1];
+        let setScreenHeight = screenSize[0];
 
         let canvas = document.getElementById("canvas-device");
-        canvas.width = deviceSize[1];
-        canvas.height = deviceSize[0];
+        canvas.width = setScreenWidth;
+        canvas.height = setScreenHeight;
         let ctx = canvas.getContext("2d");
 
         if(state.containImage){
             (async () => {
-                const setScreenWidth = screenSize[0]/2;
-                const setScreenHeight = screenSize[1]/2;
+                const halfScreenWidth = setScreenWidth/2;
+                const halfScreenHeight = setScreenHeight/2;
                 const setDeviceWidth = deviceSize[0]/2;
                 const setDeviceHeight = deviceSize[1]/2;
 
                 const screenLoad = await screenImageLoad();
-                ctx.drawImage(screenLoad, setStartX+57, setStartY+42, setScreenWidth, setScreenHeight);
+                ctx.drawImage(screenLoad, setStartX+57, setStartY+42, halfScreenHeight, halfScreenWidth);
                 const deviceLoad = await deviceImageLoad();
                 ctx.drawImage(deviceLoad, setStartX, setStartY, setDeviceWidth, setDeviceHeight);
 
@@ -126,19 +150,18 @@ export function PageWindow() {
     useEffect(() => {
         let setStartX = parseInt(state.deviceXPos);
         let setStartY = parseInt(state.deviceYPos);
+        let setScreenWidth = screenSize[1];
+        let setScreenHeight = screenSize[0];
 
         let canvas = document.getElementById("canvas-text");
-        canvas.width = deviceSize[1];
-        canvas.height = deviceSize[0];
+        canvas.width = setScreenWidth;
+        canvas.height = setScreenHeight;
         let ctx = canvas.getContext("2d");
         
-        const setStyle = { fontSize:50, fontFamily:'Arial', color:'black', textAlign:'left', textBaseline:'top' };
-        ctx.font = setStyle.fontSize + 'px ' + setStyle.fontFamily;
-        ctx.textAlign = setStyle.textAlign;
-        ctx.textBaseline = setStyle.textBaseline;
+        //ctx.textBaseline = setStyle.textBaseline;
         ctx.fillStyle = state.fontColor;
         ctx.textAlign = state.fontAlign;
-        ctx.font = (state.fontSize.toString()+"px "+state.fontFamily);
+        ctx.font = (state.fontWeight.toString()+" "+state.fontSize.toString()+"px "+state.fontFamily);
 
         let textArray = state.inputText.split(/\r?\n/);
         let y = 500;
@@ -150,27 +173,7 @@ export function PageWindow() {
         let imgData = canvas.toDataURL("image/png");
         let canvasImage = document.getElementById('canvas-img-text');
         canvasImage.setAttribute('src' , imgData);
-    }, [state.fontAlign, state.fontFamily, state.fontSize, state.lineHeight, state.fontColor, state.inputText]);
-
-
-    const fileLoad = e => {
-        this.setState({
-          img: e.target.result
-        });
-    };
-
-    const submit = () => {
-        console.log("submit");
-    };
-
-    const uploadImage = (e) =>{
-        const reader = new FileReader();
-        reader.readAsDataURL(e.target.files[0]);
-        reader.onload = function(result){
-            setImg(this.result);
-            mergeImage(this.result);
-        };
-    }
+    }, [state.fontAlign, state.fontFamily, state.fontWeight, state.fontSize, state.lineHeight, state.fontColor, state.inputText]);
     
     return (
         <div className="web-page">
