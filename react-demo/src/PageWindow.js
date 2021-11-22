@@ -4,15 +4,12 @@ import iPhone13Image from './iPhone 13 - Moonlight.png';
 import { useLocation } from "react-router";
 import { TopMenu } from './TopMenu.js'; 
 import { SideMenu } from "./SideMenu.js";
-import { Context } from "./ImageContext.js";
-import regeneratorRuntime from "regenerator-runtime";
+import { Context, backgroundTypeEnum } from "./ImageContext.js";
 
 export function PageWindow() {
-    
     const { state, dispatch } = useContext(Context);
 
     const emp = useLocation();
-    const [img, setImg] = useState('');
     const deviceSize = [1400,2700];
     const screenSize = [1170,2532];
 
@@ -23,10 +20,8 @@ export function PageWindow() {
             reader.onload=()=>{
                 screenImage.src = reader.result;
             }
-            reader.readAsDataURL(state.imageFiles);
-
+            reader.readAsDataURL(state.imageFiles["iPhone 13"].image);
             screenImage.onload = function() {
-                console.log("imageObj2.onload");
                 resolve(screenImage);
             }
         });
@@ -38,44 +33,106 @@ export function PageWindow() {
             deviceImage.src = iPhone13Image;
 
             deviceImage.onload = function() {
-                console.log("deviceImage onload");
                 resolve(deviceImage);
             }
         });
     }
 
     useEffect(() => {
-        let canvas = document.getElementById("canvas");
-        canvas.width = deviceSize[1];
-        canvas.height = deviceSize[0];
-        let ctx = canvas.getContext("2d");
-        let grd = ctx.createLinearGradient(0, 0, deviceSize[1], deviceSize[0]);
-        grd.addColorStop(0, '#314755');
-        grd.addColorStop(1, '#26a0da');
-        ctx.fillStyle = grd;
-        ctx.fillRect(0, 0, deviceSize[1], deviceSize[0]);
+        console.log(state.deviceType);
+        let setScreenWidth = state.deviceType.height;
+        let setScreenHeight = state.deviceType.width;
 
-        const setStyle = { fontSize:50, fontFamily:'Arial', color:'black', textAlign:'left', textBaseline:'top' };
-        ctx.font = setStyle.fontSize + 'px ' + setStyle.fontFamily;
-        ctx.textAlign = setStyle.textAlign;
-        ctx.textBaseline = setStyle.textBaseline;
-        ctx.fillStyle = setStyle.color;
-        ctx.fillText(state.inputText, 200, 500);
+        let canvas = document.getElementById("canvas-bg");
+        canvas.width = setScreenWidth;
+        canvas.height = setScreenHeight;
+        let ctx = canvas.getContext("2d");
+        
+        let setGradientX = setScreenWidth;
+        let setGradientY = setScreenHeight;
+
+        if(parseInt(state.backgroundDirection) === 0){
+            setGradientX = 0;
+        }else{
+            setGradientY = 0;
+        }
+
+        let grd = ctx.createLinearGradient(0, 0, setGradientX,setGradientY);
+        if(state.backgroundType == backgroundTypeEnum.single){
+            grd.addColorStop(0, state.backgroundColor[0].color);
+            grd.addColorStop(1, state.backgroundColor[0].color);
+
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, setScreenWidth, setScreenHeight);
+        }else if(state.backgroundType == backgroundTypeEnum.gradient){
+            let haveFirstZero = false;
+            for (let value of state.backgroundColor.values()){
+                let setPos = parseInt(value.colorPos)/100;
+                if(setPos !== null && setPos < 101){
+                    if(setPos == 0){
+                        if(haveFirstZero === false){
+                            haveFirstZero = true
+                            grd.addColorStop(setPos, value.color);
+                        }
+                    }else{
+                        grd.addColorStop(setPos, value.color);
+                    }
+                }
+            }
+
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, setScreenWidth, setScreenHeight);
+        }else if(state.backgroundType == backgroundTypeEnum.image){
+            
+            if(state.backgroundImageFile !== ""){
+                let backgroundImage = new Image();
+                const reader = new FileReader();
+                reader.onload=()=>{
+                    backgroundImage.src = reader.result;
+                }
+                reader.readAsDataURL(state.backgroundImageFile);
+
+                backgroundImage.onload = function() {
+                    let imageWidth = backgroundImage.naturalWidth;
+                    let imageHeight = backgroundImage.naturalHeight;
+                    let imageScale = imageWidth/imageHeight;
+
+                    ctx.drawImage(backgroundImage, 0, 0, setScreenWidth, setScreenHeight);
+                    let imgData = canvas.toDataURL("image/png");
+                    let canvasImage = document.getElementById('canvas-img-bg');
+                    canvasImage.setAttribute('src' , imgData);
+                }
+            }
+        }
+    }, [state.backgroundType ,state.backgroundColor, state.backgroundDirection, state.backgroundColor, state.backgroundImageFile]);
+
+
+    useEffect(() => {
+        console.log(state.imageFiles);
+        let setStartX = parseInt(state.deviceXPos);
+        let setStartY = parseInt(state.deviceYPos);
+        let setScreenWidth = screenSize[1];
+        let setScreenHeight = screenSize[0];
+
+        let canvas = document.getElementById("canvas-device");
+        canvas.width = setScreenWidth;
+        canvas.height = setScreenHeight;
+        let ctx = canvas.getContext("2d");
 
         if(state.containImage){
             (async () => {
-                const setScreenWidth = screenSize[0]/2;
-                const setScreenHeight = screenSize[1]/2;
+                const halfScreenWidth = setScreenWidth/2;
+                const halfScreenHeight = setScreenHeight/2;
                 const setDeviceWidth = deviceSize[0]/2;
                 const setDeviceHeight = deviceSize[1]/2;
 
                 const screenLoad = await screenImageLoad();
-                ctx.drawImage(screenLoad, 1500+57, 250+42, setScreenWidth, setScreenHeight);
+                ctx.drawImage(screenLoad, setStartX+57, setStartY+42, halfScreenHeight, halfScreenWidth);
                 const deviceLoad = await deviceImageLoad();
-                ctx.drawImage(deviceLoad, 1500, 250, setDeviceWidth, setDeviceHeight);
+                ctx.drawImage(deviceLoad, setStartX, setStartY, setDeviceWidth, setDeviceHeight);
 
                 let imgData = canvas.toDataURL("image/png");
-                let canvasImage = document.getElementById('canvas-img');
+                let canvasImage = document.getElementById('canvas-img-device');
                 canvasImage.setAttribute('src' , imgData);
             })();
         }else{
@@ -85,58 +142,41 @@ export function PageWindow() {
             imageObj1.onload = function() {
                 const setDeviceWidth = deviceSize[0]/2;
                 const setDeviceHeight = deviceSize[1]/2;
-                ctx.drawImage(imageObj1, 1500, 250, setDeviceWidth, setDeviceHeight);
+                ctx.drawImage(imageObj1, setStartX, setStartY, setDeviceWidth, setDeviceHeight);
                 let imgData = canvas.toDataURL("image/png");
-                let canvasImage = document.getElementById('canvas-img');
+                let canvasImage = document.getElementById('canvas-img-device');
                 canvasImage.setAttribute('src' , imgData);
             }
         }
-    }, [state]);
+    }, [state.imageFiles, state.containImage, state.deviceXPos, state.deviceYPos, state.deviceSize]);
 
-    const fileLoad = e => {
-        this.setState({
-          img: e.target.result
-        });
-    };
+    useEffect(() => {
+        let setStartX = parseInt(state.deviceXPos);
+        let setStartY = parseInt(state.deviceYPos);
+        let setScreenWidth = screenSize[1];
+        let setScreenHeight = screenSize[0];
 
-    const submit = () => {
-        console.log("submit");
-    };
-
-    const uploadImage = (e) =>{
-        const reader = new FileReader();
-        reader.readAsDataURL(e.target.files[0]);
-        reader.onload = function(result){
-            setImg(this.result);
-            mergeImage(this.result);
-        };
-    }
-
-    const mergeImage = (image) => {
-        let canvas = document.getElementById("canvas");
-        canvas.width = deviceSize[0];
-        canvas.height = deviceSize[1];
+        let canvas = document.getElementById("canvas-text");
+        canvas.width = setScreenWidth;
+        canvas.height = setScreenHeight;
         let ctx = canvas.getContext("2d");
-        let grd = ctx.createLinearGradient(0, 0, 700, 0);
-        grd.addColorStop(0, "red");
-        grd.addColorStop(1, "white");
-        ctx.fillStyle = grd;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        //ctx.textBaseline = setStyle.textBaseline;
+        ctx.fillStyle = state.fontColor;
+        ctx.textAlign = state.fontAlign;
+        ctx.font = (state.fontWeight.toString()+" "+state.fontSize.toString()+"px "+state.fontFamily);
 
-        let imageObj1 = new Image();
-        let imageObj2 = new Image();
-        imageObj1.src = paperImage;
-        imageObj2.src = image;
-        imageObj1.onload = function() {
-            ctx.drawImage(imageObj1, 0, 0, 400, 400);
-            imageObj2.onload = function() {
-                ctx.drawImage(imageObj2, 200, 200, 300, 300);
-                let imgData = canvas.toDataURL("image/png");
-                let canvasImage = document.getElementById('canvas-img');
-                canvasImage.setAttribute('src' , imgData);
-            }
-        };
-    }
+        let textArray = state.inputText.split(/\r?\n/);
+        let y = 500;
+        for (var i = 0; i < textArray.length; i++) {
+            ctx.fillText(textArray[i], setStartX/2, y);
+            y += parseInt(state.lineHeight);    
+        }
+
+        let imgData = canvas.toDataURL("image/png");
+        let canvasImage = document.getElementById('canvas-img-text');
+        canvasImage.setAttribute('src' , imgData);
+    }, [state.fontAlign, state.fontFamily, state.fontWeight, state.fontSize, state.lineHeight, state.fontColor, state.inputText]);
     
     return (
         <div className="web-page">
@@ -145,11 +185,11 @@ export function PageWindow() {
                 <SideMenu />
             </div>
             <div className="preview-right-block">
-                <h1>{state.inputText}</h1>
                 <div className="preview-block">
-                    <canvas id="canvas"><img id="canvas-img" /></canvas>
+                    <canvas id="canvas-bg" styles="z-index: 1;"><img id="canvas-img-bg" /></canvas>
+                    <canvas id="canvas-device" styles="z-index: 2;"><img id="canvas-img-device" /></canvas>
+                    <canvas id="canvas-text" styles="z-index: 3;"><img id="canvas-img-text" /></canvas>
                 </div>
-                <button onClick={submit}>上傳</button>
             </div>
         </div>
     );

@@ -21,8 +21,9 @@
         width: 100%;
     }
     canvas{
+        position: absolute; 
         padding: 1%;
-        width: 90%;
+        width: 70%;
     }
 }
 
@@ -58,4 +59,17 @@
 .preview-right-block{
     display: inline-block;
     width: 75%;
+}
+
+.material-picker{
+    display: block;
+}
+
+.background-color-block{
+    display: inline-block;
+    margin: 6px;
+}
+
+.background-color-text{
+    color: #000;
 }

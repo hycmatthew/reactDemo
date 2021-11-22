@@ -15,6 +15,7 @@ export function TopMenu() {
                 <MenuIcon />
                 <Link to="/"><Button>Main</Button></Link>
                 <Link to="/preview"><Button>Image</Button></Link>
+                <Link to="/test"><Button>Test</Button></Link>
             </Toolbar>
         </AppBar>
     </Box>
