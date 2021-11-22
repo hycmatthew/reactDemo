@@ -10,7 +10,6 @@ export function PageWindow() {
     const { state, dispatch } = useContext(Context);
 
     const emp = useLocation();
-    const [img, setImg] = useState('');
     const deviceSize = [1400,2700];
     const screenSize = [1170,2532];
 
@@ -21,8 +20,7 @@ export function PageWindow() {
             reader.onload=()=>{
                 screenImage.src = reader.result;
             }
-            reader.readAsDataURL(state.imageFiles);
-
+            reader.readAsDataURL(state.imageFiles["iPhone 13"].image);
             screenImage.onload = function() {
                 resolve(screenImage);
             }
@@ -95,6 +93,10 @@ export function PageWindow() {
                 reader.readAsDataURL(state.backgroundImageFile);
 
                 backgroundImage.onload = function() {
+                    let imageWidth = backgroundImage.naturalWidth;
+                    let imageHeight = backgroundImage.naturalHeight;
+                    let imageScale = imageWidth/imageHeight;
+
                     ctx.drawImage(backgroundImage, 0, 0, setScreenWidth, setScreenHeight);
                     let imgData = canvas.toDataURL("image/png");
                     let canvasImage = document.getElementById('canvas-img-bg');
@@ -106,6 +108,7 @@ export function PageWindow() {
 
 
     useEffect(() => {
+        console.log(state.imageFiles);
         let setStartX = parseInt(state.deviceXPos);
         let setStartY = parseInt(state.deviceYPos);
         let setScreenWidth = screenSize[1];
@@ -129,7 +132,7 @@ export function PageWindow() {
                 ctx.drawImage(deviceLoad, setStartX, setStartY, setDeviceWidth, setDeviceHeight);
 
                 let imgData = canvas.toDataURL("image/png");
-                let canvasImage = document.getElementById('canvas-img');
+                let canvasImage = document.getElementById('canvas-img-device');
                 canvasImage.setAttribute('src' , imgData);
             })();
         }else{

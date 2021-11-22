@@ -22,7 +22,6 @@ import CropPortraitIcon from '@material-ui/icons/CropPortrait';
 import FormatAlignLeftIcon from '@material-ui/icons/FormatAlignLeft';
 import FormatAlignCenterIcon from '@material-ui/icons/FormatAlignCenter';
 import FormatAlignRightIcon from '@material-ui/icons/FormatAlignRight';
-import FormatAlignJustifyIcon from '@material-ui/icons/FormatAlignJustify';
 import IconButton from '@material-ui/core/IconButton';
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
@@ -34,7 +33,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import { makeStyles,styled } from "@material-ui/styles";
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
-import { backgroundTypeEnum, deviceInitPosition, Context } from "./ImageContext.js";
+import { backgroundTypeEnum, deviceInitPosition, deviceSize, Context } from "./ImageContext.js";
 import { v4 as uuidv4 } from 'uuid';
 
 const useStyles = makeStyles(theme => ({
@@ -67,6 +66,7 @@ export function SideMenu(props) {
     }
 
     const initColorLogicLogic = [{ id: 0, color: '#24C6DC', colorPos: 0 },{ id: 1, color: '#514A9D', colorPos: 100}];
+    const screenImageMap = new Map();
     let typingTimer = null;
 
     const [openSizeSetting, setOpenSizeSetting] = React.useState(true);
@@ -159,7 +159,10 @@ export function SideMenu(props) {
         const re = /^[0-9\b]{1,4}$/;
         if (pos === '' || re.test(pos)) {
             setDeviceSetting(prevState => ({ ...prevState, deviceXPos: pos }))
-            dispatch({ type: 'updateDeviceXPosition', deviceXPos: pos});
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                dispatch({ type: 'updateDeviceXPosition', deviceXPos: pos});
+            }, 300);
         }
     }
 
@@ -167,7 +170,10 @@ export function SideMenu(props) {
         const re = /^[0-9\b]{1,3}$/;
         if (pos === '' || re.test(pos)) {
             setDeviceSetting(prevState => ({ ...prevState, deviceYPos: pos }))
-            dispatch({ type: 'updateDeviceYPosition', deviceYPos: pos});
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                dispatch({ type: 'updateDeviceYPosition', deviceYPos: pos});
+            }, 300);
         }
     }
 
@@ -208,12 +214,11 @@ export function SideMenu(props) {
         dispatch({ type: 'updateBackgroundColor', backgroundType: type, backgroundColor: newList});
     }
 
-    const uploadImage = (e) =>{
-        dispatch({ type: 'updateInputImage', imageFiles: e.target.files[0], containImage: true});
+    const uploadImage = (e, deviceKey) =>{
+        dispatch({ type: 'updateInputImage', imageFiles: e.target.files[0], imageType: deviceKey, containImage: true});
     }
 
     const uploadBackgroundImage = (e) =>{
-        console.log(e);
         if(ValidateFileUpload(e)){
             console.log(e.target.files[0]);
             dispatch({ type: 'updateBackgroundImage', backgroundImageFile: e.target.files[0]});
@@ -265,9 +270,25 @@ export function SideMenu(props) {
         }
     }
 
+    const setScreenshotImageBlock = () => {
+        let tempScreenImageList = [];
+        for (let key of Object.keys(deviceSize)) {
+            screenImageMap.set(key, "");
+            tempScreenImageList.push(
+                <div key={key}>
+                    <Typography component="legend" sx={{ width: 200 }}>{key} ({deviceSize[key].width}x{deviceSize[key].height})</Typography>
+                    <ListItem>
+                        <input type="file" onChange={ (e)=>uploadImage(e, key)} />
+                    </ListItem>
+                </div>
+            );
+        }
+        return tempScreenImageList;
+    }
+
     const setFontFamilyBlock = () =>{
         let tempFontFamilyList = [];
-        for(let i=0; i<=safeFontFamilyList.length-1; i++){
+        for(let i=0; i<safeFontFamilyList.length; i++){
             tempFontFamilyList.push(
                 <MenuItem key={safeFontFamilyList[i]} value={ safeFontFamilyList[i] }>{ safeFontFamilyList[i] }</MenuItem>
             );
@@ -358,9 +379,7 @@ export function SideMenu(props) {
             return blockPickerList;
         }else if(backgroundType === backgroundTypeEnum.image){
             return (<ListItem>
-                <ListItemIcon>
-                <StarBorder />
-                </ListItemIcon>
+                <ListItemIcon><StarBorder /></ListItemIcon>
                 <input type="file" onChange={uploadBackgroundImage} />
             </ListItem>)
         }
@@ -406,12 +425,7 @@ export function SideMenu(props) {
                 </ListItemButton>
                 <Collapse in={openScreenshot} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
-                    <ListItem>
-                        <ListItemIcon>
-                        <StarBorder />
-                        </ListItemIcon>
-                        <input type="file" onChange={uploadImage} />
-                    </ListItem>
+                        { setScreenshotImageBlock() }
                     </List>
                 </Collapse>
                 <ListItemButton className="set-background-submenu" onClick={updateBackgroundList}>

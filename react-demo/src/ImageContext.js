@@ -7,15 +7,15 @@ export function Context(){
     const [state, dispatch] = useReducer(dataReducer, initialState);
 }
 
-export const deviceSize = new Map([
-    ["iPhone 13", {width: 1242, height: 2688}],
-    ["iPhone X", {width: 1125, height: 2436}],
-    ["iPhone 8 Plus", {width: 1242, height: 2208}],
-    ["iPhone 8", {width: 750, height: 1334}],
-    ["iPad Pro 12.9", {width: 2048, height: 2732}],
-    ["iPad Pro 11", {width: 1668, height: 2388}],
-    ["iPad Air", {width: 1668, height: 2224}]
-]);
+export const deviceSize = {
+    "iPhone 13": {width: 1242, height: 2688, image: ""},
+    "iPhone X": {width: 1125, height: 2436, image: ""},
+    "iPhone 8 Plus": {width: 1242, height: 2208, image: ""},
+    "iPhone 8": {width: 750, height: 1334, image: ""},
+    "iPad Pro 12.9": {width: 2048, height: 2732, image: ""},
+    "iPad Pro 11": {width: 1668, height: 2388, image: ""},
+    "iPad Air": {width: 1668, height: 2224, image: ""}
+}
 export const backgroundTypeEnum = Object.freeze({"single":1, "gradient":2, "image": 3})
 
 export const deviceInitPosition = {
@@ -25,9 +25,9 @@ export const deviceInitPosition = {
 }
 
 const initialState = {
-    imageFiles: {},
+    imageFiles: deviceSize,
     containImage: false,
-    deviceType: deviceSize.get("iPhone 13"),
+    deviceType: deviceSize["iPhone 13"],
     deviceXPos: deviceInitPosition.xPos,
     deviceYPos: deviceInitPosition.yPos,
     deviceSize: 2,
@@ -70,7 +70,8 @@ function dataReducer(state, action) {
         case 'updateTextFontColor':
             return { ...state, 'fontColor': action.fontColor};
         case 'updateInputImage':
-            return { ...state, 'imageFiles': action.imageFiles, 'containImage': action.containImage};
+            deviceSize[action.imageType].image = action.imageFiles
+            return { ...state, 'imageFiles': deviceSize, 'containImage': action.containImage};
         case 'updateBackgroundImage':
             return { ...state, 'backgroundImageFile': action.backgroundImageFile};
         case 'updateBackgroundColor':
